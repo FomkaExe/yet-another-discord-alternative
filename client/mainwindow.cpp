@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_sendButton, &QAbstractButton::clicked,
             this, &MainWindow::slotSendMessage);
+    connect(m_txtInput, &QLineEdit::returnPressed,
+            this, &MainWindow::slotSendMessage);
     connect(m_client, &Client::readyReadSuccess,
             this, &MainWindow::slotShowMessage);
 
@@ -43,6 +45,5 @@ void MainWindow::slotSendMessage() {
 }
 
 void MainWindow::slotShowMessage(const QString& message) {
-    qDebug() << "slotShowMessage";
     m_txtInfo->append(message);
 }
