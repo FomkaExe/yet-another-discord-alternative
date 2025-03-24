@@ -10,6 +10,7 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = nullptr);
     void connectToServer(const QString& ipv4, int port);
+    void disconnectFromServer();
     qint64 sendToServer(const QString& message);
 
 private slots:

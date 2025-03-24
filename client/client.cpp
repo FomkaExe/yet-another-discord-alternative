@@ -14,6 +14,10 @@ void Client::connectToServer(const QString& ipv4, int port) {
     m_socket->connectToHost(ipv4, port);
 }
 
+void Client::disconnectFromServer() {
+    m_socket->disconnectFromHost();
+}
+
 qint64 Client::sendToServer(const QString& message) {
     QByteArray barr;
     QDataStream out(&barr, QIODevice::WriteOnly);
