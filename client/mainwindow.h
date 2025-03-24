@@ -2,22 +2,33 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QTextEdit>
+#include <QLineEdit>
+#include <QPushButton>
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
+#include "client.h"
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void slotSendMessage();
+    void slotShowMessage(const QString& message);
+
 private:
-    Ui::MainWindow *ui;
+    QWidget* m_centralWidget;
+    QVBoxLayout* m_layout;
+    QLabel* m_programNameLabel;
+    QTextEdit* m_txtInfo;
+    QLineEdit* m_txtInput;
+    QPushButton* m_sendButton;
+
+    Client* m_client;
 };
 #endif // MAINWINDOW_H
