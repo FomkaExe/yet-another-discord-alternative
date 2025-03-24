@@ -9,16 +9,18 @@ Server::Server(int port) :  m_tcpServer(new QTcpServer()),
                             m_clientList(QList<QTcpSocket*>()) {
     if (!m_tcpServer->listen(QHostAddress::Any, port)) {
         qFatal() << QString("Server is not listening on port %1").arg(port);
-        m_tcpServer->close();
         return;
     }
     qDebug() << QString("Server is listening on port %1").arg(port);
+
     connect(m_tcpServer, &QTcpServer::newConnection,
             this, &Server::slotNewConnection);
 }
 
 Server::~Server() {
+    qDebug() << "Server shutting down...";
     m_tcpServer->close();
+    delete m_tcpServer;
 }
 
 Server* Server::instance(int port) {
@@ -31,21 +33,21 @@ Server* Server::instance(int port) {
 void Server::sendToClient(QString& message, QTcpSocket* sock) {
     QByteArray barr;
     QDataStream out(&barr, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_5);
     out << quint16(0) << message;
     out.device()->seek(0);
-    out << (barr.size() - quint16(0));
-    sock->write(barr);
-    qDebug() << sock->peerAddress().toString() + ": " + message;
+    out << quint16(barr.size() - quint16(0));
+    qDebug() << sock->write(barr);
 }
 
 void Server::sendToAllClients(QString& message) {
-    for (auto client : m_clientList) {
-        sendToClient(message, client);
+    for (int i = 0; i < m_clientList.size(); ++i) {
+        sendToClient(message, m_clientList.at(i));
     }
 }
 
 void Server::slotNewConnection() {
-    QTcpSocket* sock = (QTcpSocket*) sender();
+    QTcpSocket* sock = m_tcpServer->nextPendingConnection();
     if (!sock) {
         return;
     }
@@ -56,9 +58,10 @@ void Server::slotNewConnection() {
     connect(sock, &QTcpSocket::disconnected,
             this, &Server::slotClientDisconnected);
 
-    QString msg = QString("Client %1 has connected").
-                  arg(sock->peerAddress().toString());
-    sendToClient(msg, sock);
+    QString msg = QString("Client %1:%2 has connected").
+                  arg(sock->peerAddress().toString()).arg(sock->peerPort());
+    qDebug() << msg;
+    sendToAllClients(msg);
 }
 
 void Server::slotReadClient() {
@@ -76,7 +79,8 @@ void Server::slotReadClient() {
         }
         QString str;
         in >> str;
-        QString message = sock->peerAddress().toString() + ": " + str;
+        QString message = sock->peerAddress().toString() + sock->peerPort() +
+                          ": " + str;
         m_nextBlockSize = 0;
         sendToAllClients(message);
     }
@@ -84,7 +88,13 @@ void Server::slotReadClient() {
 
 void Server::slotClientDisconnected() {
     QTcpSocket* sock = (QTcpSocket*) sender();
-    QString peerAddress = sock->peerAddress().toString();
-    QString msg = QString("Client %1 has disconnected").arg(peerAddress);
-    sendToClient(msg, sock);
+    QString msg = QString("Client %1:%2 disconnected").
+                  arg(sock->peerAddress().toString()).arg(sock->peerPort());
+    sock->deleteLater();
+    for (int i = 0; i < m_clientList.size(); ++i) {
+        if (m_clientList.at(i) == sock) {
+            m_clientList.removeAt(i);
+        }
+    }
+    sendToAllClients(msg);
 }
