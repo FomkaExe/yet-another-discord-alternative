@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(client LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network)
 
 qt_standard_project_setup()
 
@@ -10,13 +10,15 @@ qt_add_executable(client
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    mainwindow.ui
+    client.h
+    client.cpp
 )
 
 target_link_libraries(client
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt6::Network
 )
 
 include(GNUInstallDirs)
