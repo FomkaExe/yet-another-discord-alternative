@@ -37,7 +37,7 @@ void Server::sendToClient(QString& message, QTcpSocket* sock) {
     out << quint16(0) << message;
     out.device()->seek(0);
     out << quint16(barr.size() - quint16(0));
-    qDebug() << sock->write(barr);
+    sock->write(barr);
 }
 
 void Server::sendToAllClients(QString& message) {
