@@ -20,6 +20,7 @@ public:
 
 private:
     void initConnectWindow();
+    void initMenuBar();
 
 private slots:
     void slotSendMessage();
@@ -32,16 +33,10 @@ private:
     QWidget* m_centralWidget;
     QVBoxLayout* m_layout;
     QLabel* m_programNameLabel;
-    QTextEdit* m_txtInfo;
+    QTextEdit* m_chatWindow;
     QLineEdit* m_txtInput;
     QPushButton* m_sendButton;
     QMenuBar* m_menuBar;
-    QMenu* m_connectMenu;
-    QMenu* m_aboutMenu;
-    QAction* m_connectAct;
-    QAction* m_disconnectAct;
-    QAction* m_exitAct;
-    QAction* m_aboutQtAct;
     QWidget* m_connectWindow;
 
     /* Client logic */
