@@ -24,9 +24,7 @@ private:
 
 private slots:
     void slotSendMessage();
-    void slotShowMessage(const QString& message);
     void slotClientConnect(const QString& address);
-    void slotClientDisconnect();
 
 private:
     /* Widgets */
@@ -41,5 +39,6 @@ private:
 
     /* Client logic */
     Client* m_client;
+    QString m_serverAddress;
 };
 #endif // MAINWINDOW_H

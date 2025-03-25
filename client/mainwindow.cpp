@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_sendButton(new QPushButton("Send", m_centralWidget)),
     m_menuBar(new QMenuBar(m_centralWidget)),
     m_connectWindow(new QWidget(parent)),
-    m_client(new Client()) {
+    m_client(new Client()),
+    m_serverAddress(QString("127.0.0.1:23012")) {
     setCentralWidget(m_centralWidget);
 
     initMenuBar();
@@ -25,8 +26,11 @@ MainWindow::MainWindow(QWidget *parent) :
             this, &MainWindow::slotSendMessage);
     connect(m_txtInput, &QLineEdit::returnPressed,
             this, &MainWindow::slotSendMessage);
+
     connect(m_client, &Client::readyReadSuccess,
-            this, &MainWindow::slotShowMessage);
+            this, [=](const QString& message){m_chatWindow->append(message);});
+    connect(m_client, &Client::connectedToServer,
+            this, [=](){statusBar()->showMessage("Connected to server");});
 
     m_chatWindow->setReadOnly(true);
 
@@ -43,7 +47,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::initConnectWindow() {
     QLabel* addressLabel = new QLabel("Server address:");
-    QLineEdit* serverAddressLineEdit = new QLineEdit("127.0.0.1:23012");
+    QLineEdit* serverAddressLineEdit = new QLineEdit(m_serverAddress);
     QPushButton* connectBtn = new QPushButton("Connect");
     QPushButton* cancelBtn = new QPushButton("Cancel");
 
@@ -59,11 +63,13 @@ void MainWindow::initConnectWindow() {
     m_connectWindow->setWindowModality(Qt::ApplicationModal);
 
     connect(serverAddressLineEdit, &QLineEdit::returnPressed,
-            this, [=](){slotClientConnect(serverAddressLineEdit->text());
+            this, [=](){m_serverAddress = serverAddressLineEdit->text();
+                        slotClientConnect(m_serverAddress);
                         m_connectWindow->close();});
 
     connect(connectBtn, &QAbstractButton::clicked,
-            this, [=](){slotClientConnect(serverAddressLineEdit->text());
+            this, [=](){m_serverAddress = serverAddressLineEdit->text();
+                        slotClientConnect(m_serverAddress);
                         m_connectWindow->close();});
 
     connect(cancelBtn, &QAbstractButton::clicked,
@@ -88,7 +94,8 @@ void MainWindow::initMenuBar() {
     connect(connectAct, &QAction::triggered,
             this, [=](){m_connectWindow->show();});
     connect(disconnectAct, &QAction::triggered,
-            this, &MainWindow::slotClientDisconnect);
+            this, [=](){m_client->disconnectFromServer();
+                        statusBar()->showMessage("Disconnected");});
     connect(exitAct, &QAction::triggered,
             this, [=](){this->close();});
     connect(aboutQtAct, &QAction::triggered,
@@ -99,10 +106,6 @@ void MainWindow::slotSendMessage() {
     QString message = m_txtInput->text();
     m_client->sendToServer(message);
     m_txtInput->clear();
-}
-
-void MainWindow::slotShowMessage(const QString& message) {
-    m_chatWindow->append(message);
 }
 
 void MainWindow::slotClientConnect(const QString& address) {
@@ -119,10 +122,4 @@ void MainWindow::slotClientConnect(const QString& address) {
         ip = strList.join(":");
     }
     m_client->connectToServer(ip, port.toInt());
-    statusBar()->showMessage(QString("Connected to server %1:%2").arg(ip, port));
-}
-
-void MainWindow::slotClientDisconnect() {
-    m_client->disconnectFromServer();
-    statusBar()->showMessage("Disconnected");
 }
