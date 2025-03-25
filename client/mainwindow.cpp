@@ -29,8 +29,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_client, &Client::readyReadSuccess,
             this, [=](const QString& message){m_chatWindow->append(message);});
+
     connect(m_client, &Client::connectedToServer,
             this, [=](){statusBar()->showMessage("Connected to server");});
+
+    connect(m_client, &Client::signalSocketError,
+            this, [=](QAbstractSocket::SocketError socketError) {
+    statusBar()->showMessage(QString::number(static_cast<int>(socketError)));});
 
     m_chatWindow->setReadOnly(true);
 
@@ -138,13 +143,37 @@ void MainWindow::slotClientConnect(const QString& address,
         statusBar()->showMessage("Error: address is empty");
         return;
     }
-    QString ip = address.split(":").first();
-    QString port = address.split(":").last();
-    QStringList strList = address.split(":");
-    if (strList.size() > 2) {
-        /* address is standard ipv6 */
-        strList.removeLast();
-        ip = strList.join(":");
+    QStringList addressParts = address.split(':');
+    QString ip = addressParts.first();
+    QString port = "23012";
+    if (addressParts.size() == 1) {
+        /* ipv4 without port */
+        qDebug() << "ipv4 without port";
+        ip = addressParts.first();
+        port = "23012";
+    } else if (addressParts.size() == 2) {
+        /* ipv4 with port */
+        qDebug() << "ipv4 with port";
+        ip = addressParts.first();
+        port = addressParts.last();
+    } else {
+        /* ipv6 */
+        if (addressParts.at(0).at(0) == "[") {
+            /* ipv6 with port */
+            qDebug() << "ipv6 with port";
+            port = addressParts.last();
+            addressParts.removeLast();
+            ip = addressParts.join(':');
+            ip.removeLast();
+            ip.removeFirst();
+            qDebug() << "ip: " << ip << '\n' << "port: " << port;
+        } else {
+            /* ipv6 without port */
+            qDebug() << "ipv6 without port";
+            ip = addressParts.join(':');
+            port = "23012";
+            qDebug() << "ip: " << ip << '\n' << "port: " << port;
+        }
     }
     m_client->connectToServer(ip, port.toInt(), nickname);
 }
