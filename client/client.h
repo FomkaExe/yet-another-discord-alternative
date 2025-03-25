@@ -16,9 +16,11 @@ public:
 private slots:
     void slotErrorOccurred(QAbstractSocket::SocketError socketError);
     void slotReadyRead();
+    void slotEmitConnected();
 
 signals:
     void readyReadSuccess(const QString& message);
+    void connectedToServer();
 
 private:
     QTcpSocket* m_socket;

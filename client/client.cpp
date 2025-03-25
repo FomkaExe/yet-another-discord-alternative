@@ -8,6 +8,8 @@ Client::Client(QObject *parent)
             this, &Client::slotErrorOccurred);
     connect(m_socket, &QIODevice::readyRead,
             this, &Client::slotReadyRead);
+    connect(m_socket, &QAbstractSocket::connected,
+            this, &Client::slotEmitConnected);
 }
 
 void Client::connectToServer(const QString& ipv4, int port) {
@@ -52,4 +54,8 @@ void Client::slotReadyRead() {
 
         m_nextBlockSize = 0;
     }
+}
+
+void Client::slotEmitConnected() {
+    emit connectedToServer();
 }
