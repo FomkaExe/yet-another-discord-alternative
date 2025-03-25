@@ -23,6 +23,7 @@ private slots:
 signals:
     void readyReadSuccess(const QString& message);
     void connectedToServer();
+    void signalSocketError(QAbstractSocket::SocketError socketError);
 
 private:
     QTcpSocket* m_socket;

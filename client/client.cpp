@@ -15,6 +15,10 @@ Client::Client(QObject *parent)
 void Client::connectToServer(const QString& ipv4,
                              int port,
                              const QString& nickname) {
+    if (m_socket->state() != 0) {
+        emit signalSocketError(QAbstractSocket::NetworkError);
+        return;
+    }
     m_socket->connectToHost(ipv4, port);
     sendToServer(nickname + "\n");
 }
@@ -35,6 +39,7 @@ qint64 Client::sendToServer(const QString& message) {
 
 void Client::slotErrorOccurred(QAbstractSocket::SocketError socketError) {
     qDebug() << socketError;
+    emit signalSocketError(socketError);
 }
 
 void Client::slotReadyRead() {
