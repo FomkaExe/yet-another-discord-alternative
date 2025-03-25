@@ -9,7 +9,9 @@ class Client : public QObject
     Q_OBJECT
 public:
     explicit Client(QObject *parent = nullptr);
-    void connectToServer(const QString& ipv4, int port);
+    void connectToServer(const QString& ipv4,
+                         int port,
+                         const QString& nickname);
     void disconnectFromServer();
     qint64 sendToServer(const QString& message);
 

@@ -12,8 +12,11 @@ Client::Client(QObject *parent)
             this, &Client::slotEmitConnected);
 }
 
-void Client::connectToServer(const QString& ipv4, int port) {
+void Client::connectToServer(const QString& ipv4,
+                             int port,
+                             const QString& nickname) {
     m_socket->connectToHost(ipv4, port);
+    sendToServer(nickname + "\n");
 }
 
 void Client::disconnectFromServer() {

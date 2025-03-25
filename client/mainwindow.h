@@ -24,7 +24,7 @@ private:
 
 private slots:
     void slotSendMessage();
-    void slotClientConnect(const QString& address);
+    void slotClientConnect(const QString& address, const QString& nickname);
 
 private:
     /* Widgets */

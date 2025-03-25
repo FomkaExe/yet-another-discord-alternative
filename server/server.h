@@ -12,8 +12,8 @@ private:
 
 public:
     static Server* instance(int port);
-    void sendToClient(QString& message, QTcpSocket* sock);
-    void sendToAllClients(QString& message);
+    void sendToClient(const QString& message, QTcpSocket* sock);
+    void sendToAllClients(const QString& message);
 
 private slots:
     void slotNewConnection();
@@ -24,7 +24,7 @@ private:
     static Server* m_instance;
     QTcpServer* m_tcpServer;
     quint16 m_nextBlockSize;
-    QList<QTcpSocket*> m_clientList;
+    QMap<QTcpSocket*, QString> m_clientList;
 };
 
 #endif // SERVER_H
