@@ -46,6 +46,15 @@ void Server::sendToAllClients(const QString& message) {
     }
 }
 
+void Server::updateClientList() {
+    QString clientsList("");
+    for (auto it = m_clientList.begin(); it != m_clientList.end(); ++it) {
+        clientsList.append(it.value());
+        clientsList.append('\t');
+    }
+    sendToAllClients(clientsList);
+}
+
 void Server::slotNewConnection() {
     QTcpSocket* sock = m_tcpServer->nextPendingConnection();
     if (!sock) {
@@ -80,6 +89,7 @@ void Server::slotReadClient() {
             m_nextBlockSize = 0;
             QString msg = QString("Client %1 has connected").arg(str);
             sendToAllClients(msg);
+            updateClientList();
             qDebug() << msg;
             return;
         }
@@ -98,4 +108,5 @@ void Server::slotClientDisconnected() {
     m_clientList.remove(sock);
     sock->deleteLater();
     sendToAllClients(msg);
+    updateClientList();
 }

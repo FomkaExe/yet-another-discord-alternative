@@ -37,7 +37,7 @@ qint64 Client::sendToServer(const QString& message) {
     return m_socket->write(barr);
 }
 
-void Client::slotErrorOccurred(QAbstractSocket::SocketError socketError) {
+void Client::slotErrorOccurred(const QAbstractSocket::SocketError& socketError){
     switch(socketError) {
     case QAbstractSocket::UnknownSocketError:
         emit signalSocketError("ERROR: Unidentified error");
@@ -132,9 +132,14 @@ void Client::slotReadyRead() {
         }
         QString str;
         in >> str;
-        emit readyReadSuccess(str);
-
+        if (str.last(1) == '\t') {
+            QStringList clientsList = str.split('\t');
+            m_nextBlockSize = 0;
+            emit clientListUpdated(clientsList);
+            return;
+        }
         m_nextBlockSize = 0;
+        emit readyReadSuccess(str);
     }
 }
 

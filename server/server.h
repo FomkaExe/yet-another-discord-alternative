@@ -14,6 +14,7 @@ public:
     static Server* instance(int port);
     void sendToClient(const QString& message, QTcpSocket* sock);
     void sendToAllClients(const QString& message);
+    void updateClientList();
 
 private slots:
     void slotNewConnection();

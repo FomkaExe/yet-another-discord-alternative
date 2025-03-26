@@ -16,14 +16,15 @@ public:
     qint64 sendToServer(const QString& message);
 
 private slots:
-    void slotErrorOccurred(QAbstractSocket::SocketError socketError);
+    void slotErrorOccurred(const QAbstractSocket::SocketError& socketError);
     void slotReadyRead();
     void slotEmitConnected();
 
 signals:
     void readyReadSuccess(const QString& message);
     void connectedToServer();
-    void signalSocketError(QString socketErrorString);
+    void signalSocketError(const QString& socketErrorString);
+    void clientListUpdated(const QStringList& clientsList);
 
 private:
     QTcpSocket* m_socket;

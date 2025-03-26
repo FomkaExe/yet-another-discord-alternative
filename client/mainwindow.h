@@ -21,17 +21,21 @@ public:
 private:
     void initConnectWindow();
     void initMenuBar();
+    void initMainLayout();
 
 private slots:
     void slotSendMessage();
     void slotClientConnect(const QString& address, const QString& nickname);
+    void slotUpdateClientList(const QStringList& clientsList);
 
 private:
     /* Widgets */
     QWidget* m_centralWidget;
-    QVBoxLayout* m_layout;
     QLabel* m_programNameLabel;
+    QVBoxLayout* m_mainLayout;
+    QHBoxLayout* m_chatClientListLayout;
     QTextEdit* m_chatWindow;
+    QFrame* m_clientListWindow;
     QLineEdit* m_txtInput;
     QPushButton* m_sendButton;
     QMenuBar* m_menuBar;

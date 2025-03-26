@@ -7,9 +7,11 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_centralWidget(new QWidget(parent)),
-    m_layout(new QVBoxLayout(m_centralWidget)),
     m_programNameLabel(new QLabel("<H1>Client</H1>", m_centralWidget)),
+    m_mainLayout(new QVBoxLayout(m_centralWidget)),
+    m_chatClientListLayout(new QHBoxLayout()),
     m_chatWindow(new QTextEdit(m_centralWidget)),
+    m_clientListWindow(new QFrame()),
     m_txtInput(new QLineEdit(m_centralWidget)),
     m_sendButton(new QPushButton("Send", m_centralWidget)),
     m_menuBar(new QMenuBar(m_centralWidget)),
@@ -17,38 +19,44 @@ MainWindow::MainWindow(QWidget *parent) :
     m_client(new Client()),
     m_serverAddress(QString("127.0.0.1:23012")) {
     setCentralWidget(m_centralWidget);
-
     initMenuBar();
     setMenuBar(m_menuBar);
     initConnectWindow();
+    initMainLayout();
 
-    connect(m_sendButton, &QAbstractButton::clicked,
-            this, &MainWindow::slotSendMessage);
-    connect(m_txtInput, &QLineEdit::returnPressed,
-            this, &MainWindow::slotSendMessage);
+    // connect(m_sendButton, &QAbstractButton::clicked,
+    //         this, &MainWindow::slotSendMessage);
+    // connect(m_txtInput, &QLineEdit::returnPressed,
+    //         this, &MainWindow::slotSendMessage);
 
-    connect(m_client, &Client::readyReadSuccess,
-            this,   [=](const QString& message){
-                        m_chatWindow->append(message);
-                    });
+    // connect(m_client, &Client::readyReadSuccess,
+    //         this,   [=](const QString& message){
+    //                     m_chatWindow->append(message);
+    //                 });
 
-    connect(m_client, &Client::connectedToServer,
-            this,   [=](){
-                        statusBar()->showMessage("Connected to server");
-                    });
+    // connect(m_client, &Client::connectedToServer,
+    //         this,   [=](){
+    //                     statusBar()->showMessage("Connected to server");
+    //                 });
 
-    connect(m_client, &Client::signalSocketError,
-            this,   [=](QString socketError) {
-                        statusBar()->showMessage(socketError);
-                    });
+    // connect(m_client, &Client::clientListUpdated,
+    //         this, &MainWindow::slotUpdateClientList);
 
-    m_chatWindow->setReadOnly(true);
+    // connect(m_client, &Client::signalSocketError,
+    //         this,   [=](QString socketError) {
+    //                     statusBar()->showMessage(socketError);
+    //                 });
 
-    m_layout->addWidget(m_programNameLabel);
-    m_layout->addWidget(m_chatWindow);
-    m_layout->addWidget(m_txtInput);
-    m_layout->addWidget(m_sendButton);
-    m_centralWidget->setLayout(m_layout);
+    // m_chatWindow->setReadOnly(true);
+
+    // m_chatClientListLayout->addWidget(m_chatWindow);
+    // m_chatClientListLayout->addWidget(m_clientListWindow);
+    // m_mainLayout->addWidget(m_programNameLabel);
+    // // m_mainLayout->addWidget(m_chatWindow);
+    // m_mainLayout->addLayout(m_chatClientListLayout);
+    // m_mainLayout->addWidget(m_txtInput);
+    // m_mainLayout->addWidget(m_sendButton);
+    // m_centralWidget->setLayout(m_mainLayout);
 }
 
 MainWindow::~MainWindow() {
@@ -139,6 +147,7 @@ void MainWindow::initMenuBar() {
             this,   [this](){
                         m_client->disconnectFromServer();
                         m_chatWindow->clear();
+                        slotUpdateClientList(QStringList());
                         statusBar()->showMessage("Disconnected");
                     });
 
@@ -151,6 +160,44 @@ void MainWindow::initMenuBar() {
             this,   [this](){
                         QMessageBox::aboutQt(m_centralWidget);
                     });
+}
+
+void MainWindow::initMainLayout() {
+    connect(m_sendButton, &QAbstractButton::clicked,
+            this, &MainWindow::slotSendMessage);
+    connect(m_txtInput, &QLineEdit::returnPressed,
+            this, &MainWindow::slotSendMessage);
+
+    connect(m_client, &Client::readyReadSuccess,
+            this,   [=](const QString& message){
+                m_chatWindow->append(message);
+            });
+
+    connect(m_client, &Client::connectedToServer,
+            this,   [=](){
+                statusBar()->showMessage("Connected to server");
+            });
+
+    connect(m_client, &Client::clientListUpdated,
+            this, &MainWindow::slotUpdateClientList);
+
+    connect(m_client, &Client::signalSocketError,
+            this,   [=](QString socketError) {
+                statusBar()->showMessage(socketError);
+            });
+
+    m_chatWindow->setReadOnly(true);
+
+    QVBoxLayout* clientListLayout = new QVBoxLayout();
+    m_clientListWindow->setLayout(clientListLayout);
+
+    m_chatClientListLayout->addWidget(m_chatWindow);
+    m_chatClientListLayout->addWidget(m_clientListWindow);
+    m_mainLayout->addWidget(m_programNameLabel);
+    m_mainLayout->addLayout(m_chatClientListLayout);
+    m_mainLayout->addWidget(m_txtInput);
+    m_mainLayout->addWidget(m_sendButton);
+    m_centralWidget->setLayout(m_mainLayout);
 }
 
 void MainWindow::slotSendMessage() {
@@ -192,4 +239,19 @@ void MainWindow::slotClientConnect(const QString& address,
         }
     }
     m_client->connectToServer(ip, port.toInt(), nickname);
+}
+
+void MainWindow::slotUpdateClientList(const QStringList& clientsList) {
+    auto listLayout = m_clientListWindow->layout();
+    if (!listLayout->isEmpty()) {
+        QLayoutItem* child;
+        while ((child = listLayout->takeAt(0)) != nullptr) {
+            delete child->widget();
+            delete child;
+        }
+    }
+    for (auto it = clientsList.begin(); it != clientsList.end(); ++it) {
+        QLabel* clientLabel = new QLabel(*it);
+        listLayout->addWidget(clientLabel);
+    }
 }
