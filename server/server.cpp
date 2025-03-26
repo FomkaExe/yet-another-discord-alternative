@@ -57,11 +57,6 @@ void Server::slotNewConnection() {
             this, &Server::slotReadClient);
     connect(sock, &QTcpSocket::disconnected,
             this, &Server::slotClientDisconnected);
-
-    // QString msg = QString("Client %1:%2 has connected").
-                  // arg(sock->peerAddress().toString()).arg(sock->peerPort());
-    // qDebug() << msg;
-    // sendToAllClients(msg);
 }
 
 void Server::slotReadClient() {
