@@ -18,7 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_menuBar(new QMenuBar(m_centralWidget)),
     m_connectWindow(new QWidget(parent)),
     m_client(new Client()),
-    m_serverAddress(QString("127.0.0.1:23012")) {
+    m_serverAddress(QString("127.0.0.1:23012")),
+    m_clientName(QString()) {
     setCentralWidget(m_centralWidget);
     initMenuBar();
     setMenuBar(m_menuBar);
@@ -59,33 +60,36 @@ void MainWindow::initConnectWindow() {
                         if (name.isEmpty()) {
                             errorNicknameLabel->setText
                                 ("Error: Nickname can't be empty");
+                            m_clientName.clear();
                             return;
-                        } else {
-                            errorNicknameLabel->clear();
                         }
+                        m_clientName = name;
+                        errorNicknameLabel->clear();
                         m_serverAddress = serverAddressLineEdit->text();
-                        slotClientConnect(m_serverAddress, name);
+                        slotClientConnect(m_serverAddress);
                         m_connectWindow->close();
                     });
 
     connect(connectBtn, &QAbstractButton::clicked,
-            this,   [=]() {
+            this,   [=](){
                         QString name = nicknameLineEdit->text();
                         if (name.isEmpty()) {
                             errorNicknameLabel->setText
                                 ("Error: Nickname can't be empty");
+                            m_clientName.clear();
                             return;
-                        } else {
-                            errorNicknameLabel->clear();
                         }
+                        m_clientName = name;
+                        errorNicknameLabel->clear();
                         m_serverAddress = serverAddressLineEdit->text();
-                        slotClientConnect(m_serverAddress, name);
+                        slotClientConnect(m_serverAddress);
                         m_connectWindow->close();
                     });
 
     connect(cancelBtn, &QAbstractButton::clicked,
             this,   [=](){
                         errorNicknameLabel->clear();
+                        m_clientName.clear();
                         m_connectWindow->close();
                     });
 }
@@ -114,6 +118,7 @@ void MainWindow::initMenuBar() {
             this,   [this](){
                         m_client->disconnectFromServer();
                         m_chatWindow->clear();
+                        m_clientName.clear();
                         slotUpdateClientList(QStringList());
                         statusBar()->showMessage("Disconnected");
                     });
@@ -137,21 +142,21 @@ void MainWindow::initMainLayout() {
 
     connect(m_client, &Client::readyReadSuccess,
             this,   [=](const QString& message){
-                m_chatWindow->append(message);
-            });
+                        m_chatWindow->append(message);
+                    });
 
     connect(m_client, &Client::connectedToServer,
             this,   [=](){
-                statusBar()->showMessage("Connected to server");
-            });
-
-    connect(m_client, &Client::clientListUpdated,
-            this, &MainWindow::slotUpdateClientList);
+                        statusBar()->showMessage("Connected to server");
+                    });
 
     connect(m_client, &Client::signalSocketError,
             this,   [=](QString socketError) {
-                statusBar()->showMessage(socketError);
-            });
+                        statusBar()->showMessage(socketError);
+                    });
+
+    connect(m_client, &Client::clientListUpdated,
+            this, &MainWindow::slotUpdateClientList);
 
     m_chatWindow->setReadOnly(true);
 
@@ -172,8 +177,7 @@ void MainWindow::slotSendMessage() {
     m_txtInput->clear();
 }
 
-void MainWindow::slotClientConnect(const QString& address,
-                                   const QString& nickname) {
+void MainWindow::slotClientConnect(const QString& address) {
     if (address.isEmpty()) {
         statusBar()->showMessage("Error: address is empty");
         return;
@@ -204,13 +208,15 @@ void MainWindow::slotClientConnect(const QString& address,
             qDebug() << "ip: " << ip << '\n' << "port: " << port;
         }
     }
-    m_client->connectToServer(ip, port.toInt(), nickname);
+    m_client->connectToServer(ip, port.toInt(), m_clientName);
 }
 
 void MainWindow::slotUpdateClientList(const QStringList& clientsList) {
     m_clientListWindow->clear();
     for (auto it = clientsList.begin(); it != clientsList.end(); ++it) {
-        QListWidgetItem* item = new QListWidgetItem(*it);
+        QListWidgetItem* item = (*it == m_clientName ?
+                                new QListWidgetItem(QIcon(":/icons/userRed"), *it) :
+                                new QListWidgetItem(QIcon(":/icons/userBlack"), *it));
         m_clientListWindow->addItem(item);
     }
 }
