@@ -133,7 +133,7 @@ void Client::slotReadyRead() {
         QString str;
         in >> str;
         if (str.last(1) == '\t') {
-            QStringList clientsList = str.split('\t');
+            QStringList clientsList = str.split('\t', Qt::SkipEmptyParts);
             m_nextBlockSize = 0;
             emit clientListUpdated(clientsList);
             return;

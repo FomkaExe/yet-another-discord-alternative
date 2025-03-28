@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QMenuBar>
+#include <QListWidget>
 
 #include "client.h"
 
@@ -35,7 +36,7 @@ private:
     QVBoxLayout* m_mainLayout;
     QHBoxLayout* m_chatClientListLayout;
     QTextEdit* m_chatWindow;
-    QFrame* m_clientListWindow;
+    QListWidget* m_clientListWindow;
     QLineEdit* m_txtInput;
     QPushButton* m_sendButton;
     QMenuBar* m_menuBar;
