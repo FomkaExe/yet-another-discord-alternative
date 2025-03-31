@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_txtInput(new QLineEdit(m_centralWidget)),
     m_sendButton(new QPushButton("Send", m_centralWidget)),
     m_menuBar(new QMenuBar(m_centralWidget)),
+    m_statusBarLabel(new QLabel()),
     m_connectWindow(new QWidget(parent)),
     m_client(new Client()),
     m_serverAddress(QString("127.0.0.1:23012")),
@@ -120,7 +121,7 @@ void MainWindow::initMenuBar() {
                         m_chatWindow->clear();
                         m_clientName.clear();
                         slotUpdateClientList(QStringList());
-                        statusBar()->showMessage("Disconnected");
+                        m_statusBarLabel->setText("Disconnected");
                     });
 
     connect(exitAct, &QAction::triggered,
@@ -135,28 +136,7 @@ void MainWindow::initMenuBar() {
 }
 
 void MainWindow::initMainLayout() {
-    connect(m_sendButton, &QAbstractButton::clicked,
-            this, &MainWindow::slotSendMessage);
-    connect(m_txtInput, &QLineEdit::returnPressed,
-            this, &MainWindow::slotSendMessage);
-
-    connect(m_client, &Client::readyReadSuccess,
-            this,   [=](const QString& message){
-                        m_chatWindow->append(message);
-                    });
-
-    connect(m_client, &Client::connectedToServer,
-            this,   [=](){
-                        statusBar()->showMessage("Connected to server");
-                    });
-
-    connect(m_client, &Client::signalSocketError,
-            this,   [=](QString socketError) {
-                        statusBar()->showMessage(socketError);
-                    });
-
-    connect(m_client, &Client::clientListUpdated,
-            this, &MainWindow::slotUpdateClientList);
+    statusBar()->addWidget(m_statusBarLabel);
 
     m_chatWindow->setReadOnly(true);
 
@@ -169,6 +149,29 @@ void MainWindow::initMainLayout() {
     m_mainLayout->addWidget(m_txtInput);
     m_mainLayout->addWidget(m_sendButton);
     m_centralWidget->setLayout(m_mainLayout);
+
+    connect(m_sendButton, &QAbstractButton::clicked,
+            this, &MainWindow::slotSendMessage);
+    connect(m_txtInput, &QLineEdit::returnPressed,
+            this, &MainWindow::slotSendMessage);
+
+    connect(m_client, &Client::readyReadSuccess,
+            this,   [=](const QString& message){
+                m_chatWindow->append(message);
+            });
+
+    connect(m_client, &Client::connectedToServer,
+            this,   [=](){
+                m_statusBarLabel->setText("Connected to server");
+            });
+
+    connect(m_client, &Client::signalSocketError,
+            this,   [=](QString socketError) {
+                m_statusBarLabel->setText(socketError);
+            });
+
+    connect(m_client, &Client::clientListUpdated,
+            this, &MainWindow::slotUpdateClientList);
 }
 
 void MainWindow::slotSendMessage() {
@@ -179,7 +182,7 @@ void MainWindow::slotSendMessage() {
 
 void MainWindow::slotClientConnect(const QString& address) {
     if (address.isEmpty()) {
-        statusBar()->showMessage("Error: address is empty");
+        m_statusBarLabel->setText("Error: address is empty");
         return;
     }
 

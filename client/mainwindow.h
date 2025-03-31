@@ -40,6 +40,7 @@ private:
     QLineEdit* m_txtInput;
     QPushButton* m_sendButton;
     QMenuBar* m_menuBar;
+    QLabel* m_statusBarLabel;
     QWidget* m_connectWindow;
 
     /* Client logic */
