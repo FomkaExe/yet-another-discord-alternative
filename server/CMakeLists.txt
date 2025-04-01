@@ -8,6 +8,7 @@ qt_standard_project_setup()
 qt_add_executable(server
     main.cpp
     server.h server.cpp
+    clientthread.h clientthread.cpp
 )
 
 target_link_libraries(server
