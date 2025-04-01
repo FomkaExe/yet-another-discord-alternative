@@ -41,9 +41,7 @@ void ClientThread::slotReadClient() {
             str = str.first(str.size() - 1);
             m_nextBlockSize = 0;
             m_clientName = str;
-            QString msg = QString("Client %1 has connected").arg(str);
-            emit signalClientListUpdated(str);
-            emit signalNewMessageServer(msg);
+            emit signalAddConnectedClient(m_clientName);
             return;
         }
         QString message = m_clientName + ": " + str;
@@ -52,7 +50,7 @@ void ClientThread::slotReadClient() {
     }
 }
 
-void ClientThread::slotWriteClient(QString msg) {
+void ClientThread::slotWriteClient(const QString& msg) {
     QByteArray barr;
     QDataStream out(&barr, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_6_5);
@@ -63,8 +61,6 @@ void ClientThread::slotWriteClient(QString msg) {
 }
 
 void ClientThread::slotClientDisconnected() {
-    QString msg = QString("Client %1 has disconnected").arg(m_clientName);
-    emit signalNewMessageServer(msg);
-    // update client list here
+    emit signalRemoveDisconnectedClient(m_clientName);
     emit signalFinished();
 }

@@ -11,13 +11,14 @@ public:
 
 signals:
     void signalError(QTcpSocket::SocketError socketError);
-    void signalNewMessageServer(QString msg);
-    void signalClientListUpdated(QString client);
+    void signalNewMessageServer(const QString& msg);
+    void signalAddConnectedClient(const QString& client);
+    void signalRemoveDisconnectedClient(const QString& client);
     void signalFinished();
 
 public slots:
     void start();
-    void slotWriteClient(QString msg);
+    void slotWriteClient(const QString& msg);
 
 private slots:
     void slotReadClient();

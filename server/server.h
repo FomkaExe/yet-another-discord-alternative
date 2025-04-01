@@ -4,6 +4,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
+#include <QMutex>
 
 class Server : public QTcpServer {
     Q_OBJECT
@@ -17,25 +18,22 @@ protected:
 
 public:
     static Server* instance(int port);
-    // void sendToClient(const QString& message, QTcpSocket* sock);
-    // void sendToAllClients(const QString& message);
-    // void updateClientList();
+
 
 private slots:
     void slotClientThreadError(QTcpSocket::SocketError socketError);
-    void slotNewMessage(QString msg);
-    void slotClientListUpdated(QString client);
-
-    // void slotReadClient();
-    // void slotClientDisconnected();
+    void slotNewMessage(const QString& msg);
+    void slotAddConnectedClient(const QString& client);
+    void slotRemoveDisconnectedClient(const QString& client);
 
 signals:
-    void signalNewMessageClientThread(QString msg);
+    void signalNewMessageClientThread(const QString& msg);
 
 private:
     static Server* m_instance;
     quint16 m_nextBlockSize;
-    QMap<ClientThread*, QString> m_clientList;
+    QList<QString> m_clientList;
+    QMutex m_clientListMutex;
 };
 
 #endif // SERVER_H
