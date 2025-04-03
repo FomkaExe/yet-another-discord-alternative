@@ -81,9 +81,10 @@ void Server::slotAddConnectedClient(const QString& client) {
     QString clientList;
     for (auto it = m_clientList.begin(); it != m_clientList.end(); ++it) {
         clientList.push_back(*it);
-        clientList.push_back('\t');
+        clientList.push_back('\n');
     }
     QString msg = QString("Client %1 has connected").arg(client);
+    qDebug() << msg;
     emit signalNewMessageClientThread(msg);
     emit signalNewMessageClientThread(clientList);
     m_clientListMutex.unlock();
@@ -93,14 +94,14 @@ void Server::slotRemoveDisconnectedClient(const QString& client) {
     m_clientListMutex.lock();
     if (m_clientList.contains(client)) {
         QString clientList;
-        int count = 0;
         for (int i = 0; i < m_clientList.size(); ++i) {
             if (m_clientList.at(i) == client) {
-                m_clientList.remove(i);
-                continue;
+                m_clientList.removeAt(i);
+                i--;
+            } else {
+                clientList.push_back(m_clientList.at(i));
+                clientList.push_back('\n');
             }
-            clientList.push_back(m_clientList.at(i));
-            clientList.push_back('\t');
         }
         QString msg = QString("Client %1 has disconnected").arg(client);
         qDebug() << msg;
