@@ -71,6 +71,22 @@ void MainWindow::initConnectWindow() {
                         m_connectWindow->close();
                     });
 
+    connect(nicknameLineEdit, &QLineEdit::returnPressed,
+            this, [=](){
+                        QString name = nicknameLineEdit->text();
+                        if (name.isEmpty()) {
+                            errorNicknameLabel->setText
+                                ("Error: Nickname can't be empty");
+                            m_clientName.clear();
+                            return;
+                        }
+                        m_clientName = name;
+                        errorNicknameLabel->clear();
+                        m_serverAddress = serverAddressLineEdit->text();
+                        slotClientConnect(m_serverAddress);
+                        m_connectWindow->close();
+                    });
+
     connect(connectBtn, &QAbstractButton::clicked,
             this,   [=](){
                         QString name = nicknameLineEdit->text();
