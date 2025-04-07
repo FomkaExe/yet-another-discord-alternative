@@ -1,38 +1,29 @@
-#include "clientthread.h"
+#include "client.h"
 
-ClientThread::ClientThread(qintptr socketDescriptor) :
-    m_socketDescriptor(socketDescriptor),
-    m_thread(new QThread()),
+Client::Client(qintptr socketDescriptor, QObject* parent) :
+    QObject(parent),
     m_nextBlockSize(quint16(0)),
-    m_tcpSocket(nullptr),
+    m_client(QTcpSocket()),
     m_clientName(QString()) {
+    m_client.setSocketDescriptor(socketDescriptor);
+    connect(&m_client, &QIODevice::readyRead,
+            this, &Client::slotClientToServer);
+    connect(&m_client, &QTcpSocket::disconnected,
+            this, &Client::slotDisconnected);
+    connect(&m_server, &QTcpSocket::disconnected,
+            this, &Client::slotDisconnected);
 }
 
-void ClientThread::start() {
-    m_tcpSocket = new QTcpSocket();
-    if (!m_tcpSocket->setSocketDescriptor(m_socketDescriptor)) {
-        emit signalError(m_tcpSocket->error());
-        return;
-    }
-
-    connect(m_tcpSocket, &QIODevice::readyRead,
-            this, &ClientThread::slotReadClient);
-
-    connect(m_tcpSocket, &QAbstractSocket::disconnected,
-            this, &ClientThread::slotClientDisconnected);
-}
-
-void ClientThread::slotReadClient() {
-    qDebug() << "SlotRead thread: " << QThread::currentThreadId();
-    QDataStream in(m_tcpSocket);
+void Client::slotClientToServer() {
+    QDataStream in(&m_client);
     while (true) {
         if (!m_nextBlockSize) {
-            if (m_tcpSocket->bytesAvailable() < sizeof(quint16)) {
+            if (m_client.bytesAvailable() < sizeof(quint16)) {
                 break;
             }
             in >> m_nextBlockSize;
         }
-        if (m_tcpSocket->bytesAvailable() < m_nextBlockSize) {
+        if (m_client.bytesAvailable() < m_nextBlockSize) {
             break;
         }
         QString str;
@@ -46,21 +37,29 @@ void ClientThread::slotReadClient() {
         }
         QString message = m_clientName + ": " + str;
         m_nextBlockSize = 0;
-        emit signalNewMessageServer(message);
+        qDebug() << message;
+        emit signalClientToServer(message);
     }
 }
 
-void ClientThread::slotWriteClient(const QString& msg) {
+void Client::slotServerToClient(const QString& msg) {
     QByteArray barr;
     QDataStream out(&barr, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_6_5);
     out << quint16(0) << msg;
     out.device()->seek(0);
     out << quint16(barr.size() - quint16(0));
-    m_tcpSocket->write(barr);
+    if (m_client.isOpen()) {
+        m_client.write(barr);
+    }
 }
 
-void ClientThread::slotClientDisconnected() {
-    emit signalRemoveDisconnectedClient(m_clientName);
-    emit signalFinished();
+void Client::slotDisconnected() {
+    m_client.flush();
+    m_server.flush();
+
+    m_client.close();
+    m_server.close();
+
+    deleteLater();
 }

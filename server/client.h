@@ -1,35 +1,31 @@
-#ifndef CLIENTTHREAD_H
-#define CLIENTTHREAD_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include <QThread>
 #include <QTcpSocket>
 
-class ClientThread : public QObject {
+class Client : public QObject {
     Q_OBJECT
 public:
-    ClientThread(qintptr socketDescriptor);
+    Client(qintptr socketDescriptor, QObject* parent = 0);
 
 signals:
-    void signalError(QTcpSocket::SocketError socketError);
-    void signalNewMessageServer(const QString& msg);
+    void signalClientToServer(const QString& msg);
     void signalAddConnectedClient(const QString& client);
     void signalRemoveDisconnectedClient(const QString& client);
-    void signalFinished();
 
 public slots:
-    void start();
-    void slotWriteClient(const QString& msg);
+    void slotClientToServer();
+    void slotServerToClient(const QString& msg);
 
 private slots:
-    void slotReadClient();
-    void slotClientDisconnected();
+    void slotDisconnected();
 
 private:
-    qintptr m_socketDescriptor;
-    QThread* m_thread;
     quint16 m_nextBlockSize;
-    QTcpSocket* m_tcpSocket;
+    QTcpSocket m_client;
+    QTcpSocket m_server;
     QString m_clientName;
 };
 
-#endif // CLIENTTHREAD_H
+#endif // CLIENT_H
