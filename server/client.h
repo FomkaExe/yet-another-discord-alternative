@@ -8,6 +8,7 @@ class Client : public QObject {
     Q_OBJECT
 public:
     Client(qintptr socketDescriptor, QObject* parent = 0);
+    const QString& getClientName();
 
 signals:
     void signalClientToServer(const QString& msg);

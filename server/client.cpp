@@ -14,6 +14,10 @@ Client::Client(qintptr socketDescriptor, QObject* parent) :
             this, &Client::slotServerDisconnected);
 }
 
+const QString& Client::getClientName() {
+    return m_clientName;
+}
+
 void Client::slotClientToServer() {
     QDataStream in(&m_client);
     while (true) {
@@ -37,6 +41,7 @@ void Client::slotClientToServer() {
         }
         QString message = m_clientName + ": " + str;
         m_nextBlockSize = 0;
+        emit signalClientToServer(message);
         qDebug() << message;
     }
 }
@@ -49,16 +54,18 @@ void Client::slotServerToClient(const QString& msg) {
     out.device()->seek(0);
     out << quint16(barr.size() - quint16(0));
     if (m_client.isOpen()) {
-        m_client.write(barr);
+        qDebug() << m_client.write(barr);
     }
 }
 
 void Client::slotServerDisconnected() {
+    emit signalRemoveDisconnectedClient(m_clientName);
     m_server.flush();
     done();
 }
 
 void Client::slotClientDisconnected() {
+    emit signalRemoveDisconnectedClient(m_clientName);
     m_client.flush();
     done();
 }

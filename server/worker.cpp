@@ -9,8 +9,6 @@ void Worker::addClient(qintptr socketDescriptor) {
             this, &Worker::signalClientToServer);
     connect(client, &Client::signalAddConnectedClient,
             this, &Worker::signalAddConnectedClient);
-    connect(client, &Client::signalRemoveDisconnectedClient,
-            this, &Worker::signalRemoveDisconnectedClient);
 
     connect(client, &Client::signalRemoveDisconnectedClient,
             this, &Worker::slotClientDisconnected);
@@ -24,13 +22,15 @@ void Worker::slotServerToClient(const QString& msg) {
     }
 }
 
-void Worker::slotClientDisconnected() {
+void Worker::slotClientDisconnected(const QString& clientName) {
     for (qsizetype i = 0; i < m_clientList.size(); ++i) {
         Client* client = m_clientList.at(i);
         if (client == sender()) {
             disconnect(client, &Client::signalRemoveDisconnectedClient,
                     this, &Worker::slotClientDisconnected);
             m_clientList.removeAt(i);
+            emit signalRemoveDisconnectedClient(clientName);
+            return;
         }
     }
 }

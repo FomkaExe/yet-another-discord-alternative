@@ -12,12 +12,12 @@ public:
 
 public slots:
     void slotServerToClient(const QString& msg);
-    void slotClientDisconnected();
+    void slotClientDisconnected(const QString& client);
 
 signals:
     void signalClientToServer(const QString& msg);
     void signalAddConnectedClient(const QString& client);
-    void signalRemoveDisconnectedClient(const QString& client);
+    void signalRemoveDisconnectedClient(const QString& clientName);
     void signalServerToClient(const QString& msg);
 
 private:
