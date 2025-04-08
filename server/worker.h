@@ -21,7 +21,7 @@ signals:
     void signalServerToClient(const QString& msg);
 
 private:
-    QList<Client*> m_clientList;
+    QVector<Client*> m_clientList;
 };
 
 #endif // WORKER_H

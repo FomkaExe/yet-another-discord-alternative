@@ -96,6 +96,7 @@ void Server::slotRemoveDisconnectedClient(const QString& client) {
         for (qsizetype i = 0; i < size; ++i) {
             if (m_clientList.at(i) == client) {
                 m_clientList.removeAt(i);
+                --i;
                 --size;
             } else {
                 clientList.push_back(m_clientList.at(i));

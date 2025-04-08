@@ -27,8 +27,8 @@ void Worker::slotClientDisconnected(const QString& clientName) {
         Client* client = m_clientList.at(i);
         if (client == sender()) {
             disconnect(client, &Client::signalRemoveDisconnectedClient,
-                    this, &Worker::slotClientDisconnected);
-            m_clientList.removeAt(i);
+                       this, &Worker::slotClientDisconnected);
+            m_clientList.remove(i);
             emit signalRemoveDisconnectedClient(clientName);
             return;
         }

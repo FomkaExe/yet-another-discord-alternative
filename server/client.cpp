@@ -54,7 +54,7 @@ void Client::slotServerToClient(const QString& msg) {
     out.device()->seek(0);
     out << quint16(barr.size() - quint16(0));
     if (m_client.isOpen()) {
-        qDebug() << m_client.write(barr);
+        m_client.write(barr);
     }
 }
 

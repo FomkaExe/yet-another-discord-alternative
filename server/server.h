@@ -35,10 +35,10 @@ private:
 
     size_t m_threadsCount;
     size_t m_rrCount;
-    QList<QThread*> m_threadList;
-    QList<Worker*> m_workerList;
+    QVector<QThread*> m_threadList;
+    QVector<Worker*> m_workerList;
 
-    QList<QString> m_clientList;
+    QVector<QString> m_clientList;
     QMutex m_clientListMutex;
 };
 
