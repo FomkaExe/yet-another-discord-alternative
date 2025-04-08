@@ -184,6 +184,7 @@ void MainWindow::initMainLayout() {
     connect(m_client, &Client::signalSocketError,
             this,   [=](QString socketError) {
                 m_statusBarLabel->setText(socketError);
+                slotUpdateClientList(QStringList());
             });
 
     connect(m_client, &Client::clientListUpdated,
