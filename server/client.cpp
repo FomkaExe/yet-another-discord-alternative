@@ -9,9 +9,9 @@ Client::Client(qintptr socketDescriptor, QObject* parent) :
     connect(&m_client, &QIODevice::readyRead,
             this, &Client::slotClientToServer);
     connect(&m_client, &QTcpSocket::disconnected,
-            this, &Client::slotDisconnected);
+            this, &Client::slotClientDisconnected);
     connect(&m_server, &QTcpSocket::disconnected,
-            this, &Client::slotDisconnected);
+            this, &Client::slotServerDisconnected);
 }
 
 void Client::slotClientToServer() {
@@ -38,7 +38,6 @@ void Client::slotClientToServer() {
         QString message = m_clientName + ": " + str;
         m_nextBlockSize = 0;
         qDebug() << message;
-        emit signalClientToServer(message);
     }
 }
 
@@ -54,10 +53,17 @@ void Client::slotServerToClient(const QString& msg) {
     }
 }
 
-void Client::slotDisconnected() {
-    m_client.flush();
+void Client::slotServerDisconnected() {
     m_server.flush();
+    done();
+}
 
+void Client::slotClientDisconnected() {
+    m_client.flush();
+    done();
+}
+
+void Client::done() {
     m_client.close();
     m_server.close();
 

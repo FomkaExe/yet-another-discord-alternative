@@ -19,7 +19,11 @@ public slots:
     void slotServerToClient(const QString& msg);
 
 private slots:
-    void slotDisconnected();
+    void slotServerDisconnected();
+    void slotClientDisconnected();
+
+private:
+    void done();
 
 private:
     quint16 m_nextBlockSize;

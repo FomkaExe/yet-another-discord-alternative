@@ -32,8 +32,10 @@ void Server::initThreads() {
         worker->moveToThread(thread);
         connect(thread, &QThread::finished,
                 worker, &QObject::deleteLater);
+
         connect(this, &Server::signalServerToClient,
                 worker, &Worker::slotServerToClient);
+
         connect(worker, &Worker::signalClientToServer,
                 this, &Server::slotClientToServer);
         connect(worker, &Worker::signalAddConnectedClient,
